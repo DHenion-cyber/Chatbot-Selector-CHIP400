@@ -1,12 +1,204 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="refresh" content="0; url=DigitalHealthFinancialPlanner.html">
-    <title>Redirecting to Digital Health Financial Planning Workbook</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Digital Health Chatbot Portal</title>
+  <style>
+    body {
+      background: #f4f9fb;
+      font-family: 'Segoe UI', Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+    .container {
+      max-width: 640px;
+      margin: 40px auto;
+      padding: 32px;
+      background: #fff;
+      border-radius: 20px;
+      box-shadow: 0 2px 16px rgba(0,0,0,0.08);
+    }
+    h2 {
+      color: #278be6;
+      margin-top: 0;
+    }
+    label {
+      font-size: 1rem;
+      margin-right: 10px;
+    }
+    select {
+      padding: 8px;
+      font-size: 1rem;
+      margin-bottom: 16px;
+    }
+    #chatIntro {
+      margin-top: 24px;
+      min-height: 150px;
+    }
+    .bot-message {
+      background: #d6eaff;
+      border-radius: 10px;
+      padding: 10px 16px;
+      margin: 10px 0;
+      font-size: 1.07rem;
+      max-width: 95%;
+      box-shadow: 0 1px 6px rgba(39,139,230,0.04);
+    }
+    #iframeWrapper {
+      margin-top: 28px;
+    }
+    iframe {
+      width: 100%;
+      min-height: 500px;
+      border: none;
+      border-radius: 12px;
+      box-shadow: 0 1px 10px rgba(39,139,230,0.05);
+    }
+    .user-message {
+      background: #e0e0e0;
+      border-radius: 10px;
+      padding: 10px 16px;
+      margin: 10px 0;
+      font-size: 1.07rem;
+      max-width: 95%;
+      text-align: right;
+    }
+    #inputRow {
+      display: flex;
+      margin-top: 20px;
+      gap: 12px;
+    }
+    #userInput {
+      flex: 1;
+      padding: 8px;
+      font-size: 1rem;
+      border-radius: 8px;
+      border: 1px solid #b5d5f6;
+    }
+    #sendBtn {
+      padding: 8px 20px;
+      border-radius: 8px;
+      border: none;
+      background: #278be6;
+      color: #fff;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: background 0.18s;
+    }
+    #sendBtn:active {
+      background: #176ab7;
+    }
+  </style>
 </head>
 <body>
-    <p>If you are not redirected automatically, <a href="DigitalHealthFinancialPlanner.html">click here</a>.</p>
+  <div class="container">
+    <h2>Digital Health Chatbot Portal</h2>
+    <label for="botDropdown">Choose a Chatbot Agent:</label>
+    <select id="botDropdown">
+      <option value="">-- Select Agent --</option>
+      <option value="startup">Startup Ideation</option>
+      <option value="market" disabled>Market Analysis (Coming Soon)</option>
+    </select>
+
+    <div id="chatIntro"></div>
+    <div id="iframeWrapper"></div>
+    <div id="inputRow" style="display:none">
+      <input id="userInput" type="text" placeholder="Type your answer..." />
+      <button id="sendBtn">Send</button>
+    </div>
+  </div>
+  <script>
+    const botDropdown = document.getElementById("botDropdown");
+    const chatIntro = document.getElementById("chatIntro");
+    const iframeWrapper = document.getElementById("iframeWrapper");
+    const inputRow = document.getElementById("inputRow");
+    const userInput = document.getElementById("userInput");
+    const sendBtn = document.getElementById("sendBtn");
+
+    const scriptedIntro = [
+      "Hello! I'm trained to help you explore ideas for digital health innovation! I'd like to start by getting to know a little about your expertise, experience, and interests. What areas of the health landscape interest you most? (i.e., wellness, research, education, nursing, acute care, prosthetics, etc.)",
+      "Are there problems that you're particularly interested in addressing?",
+      "Many people find themselves naturally oriented towards one of the following areas. Do you?\n- Patient Impact\n- Quality (may not be directly patients)\n- Finance/savings\n- Efficiency\n- New Technology",
+      "Do you have subject matter expertise or professional experience you want to share with me? This helps inform me of dynamics that you may be more familiar with to draw on your existing knowledge.",
+      "Are there qualities you know you want to design a business strategy around? For example, some people may want to stick to ideas that could be implemented quickly on a small scale with minimum funding while others may be more interested in exploring big ideas with longer timelines and external funding. Describe any potential business qualities that matter to you."
+    ];
+
+    const botConfigs = {
+      "startup": {
+        name: "Startup Ideation",
+        deploymentId: "3efaccb4e"
+      }
+    };
+
+    let currentIntroIdx = 0;
+    let userAnswers = [];
+
+    function resetChat() {
+      chatIntro.innerHTML = "";
+      iframeWrapper.innerHTML = "";
+      inputRow.style.display = "none";
+      userAnswers = [];
+      currentIntroIdx = 0;
+    }
+
+    function showBotMessage(text) {
+      const div = document.createElement("div");
+      div.className = "bot-message";
+      div.innerText = text;
+      chatIntro.appendChild(div);
+      chatIntro.scrollTop = chatIntro.scrollHeight;
+    }
+
+    function showUserMessage(text) {
+      const div = document.createElement("div");
+      div.className = "user-message";
+      div.innerText = text;
+      chatIntro.appendChild(div);
+      chatIntro.scrollTop = chatIntro.scrollHeight;
+    }
+
+    function askNextIntro() {
+      if (currentIntroIdx < scriptedIntro.length) {
+        showBotMessage(scriptedIntro[currentIntroIdx]);
+        inputRow.style.display = "flex";
+        userInput.value = "";
+        userInput.focus();
+      } else {
+        inputRow.style.display = "none";
+        // (In production, here you would send userAnswers to the chatbot)
+        // For now, load the iframe chatbot as demo
+        setTimeout(() => {
+          const { deploymentId } = botConfigs[botDropdown.value];
+          iframeWrapper.innerHTML = `
+            <iframe src=\"https://chip400intakeform.abacusai.app/\" allow=\"clipboard-write\"></iframe>
+          `;
+        }, 700);
+      }
+    }
+
+    sendBtn.onclick = () => {
+      const answer = userInput.value.trim();
+      if (!answer) return;
+      showUserMessage(answer);
+      userAnswers.push(answer);
+      inputRow.style.display = "none";
+      currentIntroIdx++;
+      setTimeout(askNextIntro, 800);
+    };
+    userInput.onkeydown = (e) => { if (e.key === "Enter") sendBtn.onclick(); };
+
+    botDropdown.addEventListener("change", () => {
+      resetChat();
+      const selectedBot = botDropdown.value;
+      if (!selectedBot) return;
+      if (!botConfigs[selectedBot]) {
+        chatIntro.innerHTML = "<div class='bot-message'><em>This agent will be available soon.</em></div>";
+        return;
+      }
+      askNextIntro();
+    });
+  </script>
 </body>
 </html>
+
