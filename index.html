@@ -6,7 +6,6 @@
   <title>Digital Health Chatbot Portal</title>
   <script src="https://cdn.abacus.ai/sdk/latest/abacus-chat.js"></script>
   <style>
-    /* existing styles unchanged */
     body { background: #f4f9fb; font-family: 'Segoe UI', Arial, sans-serif; margin: 0; padding: 0; }
     .container { max-width: 640px; margin: 40px auto; padding: 32px; background: #fff; border-radius: 20px; box-shadow: 0 2px 16px rgba(0,0,0,0.08); }
     h2 { color: #278be6; margin-top: 0; }
@@ -14,9 +13,10 @@
     select { padding: 8px; font-size: 1rem; margin-bottom: 16px; }
     #chatIntro { margin-top: 24px; min-height: 150px; }
     .bot-message { background: #d6eaff; border-radius: 10px; padding: 10px 16px; margin: 10px 0; font-size: 1.07rem; max-width: 95%; box-shadow: 0 1px 6px rgba(39,139,230,0.04); }
-    #chatContainer { margin-top: 28px; border: 1px solid #ccc; border-radius: 10px; height: 500px; }
+    #chatContainer { margin-top: 28px; border: 1px solid #ccc; border-radius: 10px; height: 500px; display: none; }
     .user-message { background: #e0e0e0; border-radius: 10px; padding: 10px 16px; margin: 10px 0; font-size: 1.07rem; max-width: 95%; text-align: right; }
-    #inputRow { display: flex; margin-top: 20px; gap: 12px; }
+    #inputRow { display: none; margin-top: 20px; gap: 12px; }
+    #inputRow.flex { display: flex; }
     #userInput { flex: 1; padding: 8px; font-size: 1rem; border-radius: 8px; border: 1px solid #b5d5f6; }
     #sendBtn { padding: 8px 20px; border-radius: 8px; border: none; background: #278be6; color: #fff; font-size: 1rem; cursor: pointer; transition: background 0.18s; }
     #sendBtn:active { background: #176ab7; }
@@ -34,7 +34,7 @@
     <div id="chatIntro"></div>
     <div id="chatContainer"></div>
 
-    <div id="inputRow" style="display:none">
+    <div id="inputRow">
       <input id="userInput" type="text" placeholder="Type your answer..." />
       <button id="sendBtn">Send</button>
     </div>
@@ -56,9 +56,7 @@
       "Are there qualities you know you want to design a business strategy around? For example, some people may want to stick to ideas that could be implemented quickly on a small scale with minimum funding while others may be more interested in exploring big ideas with longer timelines and external funding. Describe any potential business qualities that matter to you."
     ];
 
-    const botConfigs = {
-      "startup": { name: "Startup Ideation", deploymentId: "8e738c40e" }
-    };
+    const botConfigs = { "startup": { name: "Startup Ideation", deploymentId: "8e738c40e" } };
 
     let currentIntroIdx = 0;
     let userAnswers = [];
@@ -66,66 +64,43 @@
     function resetChat() {
       chatIntro.innerHTML = "";
       chatContainer.innerHTML = "";
-      inputRow.style.display = "none";
+      chatContainer.style.display = 'none';
+      inputRow.classList.remove('flex');
       userAnswers = [];
       currentIntroIdx = 0;
     }
 
     function showBotMessage(text) {
-      const div = document.createElement("div");
-      div.className = "bot-message";
-      div.innerText = text;
-      chatIntro.appendChild(div);
-      chatIntro.scrollTop = chatIntro.scrollHeight;
+      const div = document.createElement("div"); div.className = "bot-message"; div.innerText = text;
+      chatIntro.appendChild(div); chatIntro.scrollTop = chatIntro.scrollHeight;
     }
 
     function showUserMessage(text) {
-      const div = document.createElement("div");
-      div.className = "user-message";
-      div.innerText = text;
-      chatIntro.appendChild(div);
-      chatIntro.scrollTop = chatIntro.scrollHeight;
+      const div = document.createElement("div"); div.className = "user-message"; div.innerText = text;
+      chatIntro.appendChild(div); chatIntro.scrollTop = chatIntro.scrollHeight;
     }
 
     async function startAbacusChat() {
-      // initialize Abacus chat widget with initial userAnswers
-      await AbacusChat.init({
-        container: '#chatContainer',
-        deploymentId: botConfigs['startup'].deploymentId,
-        initialMessages: [
-          { role: 'system', content: 'User intake data loaded:' },
-          { role: 'user', content: JSON.stringify(userAnswers) }
-        ]
-      });
+      chatContainer.style.display = 'block';
+      await AbacusChat.init({ container: '#chatContainer', deploymentId: botConfigs['startup'].deploymentId, initialMessages: [ { role: 'system', content: 'User intake data loaded:' }, { role: 'user', content: JSON.stringify(userAnswers) } ] });
     }
 
     function askNextIntro() {
       if (currentIntroIdx < scriptedIntro.length) {
         showBotMessage(scriptedIntro[currentIntroIdx]);
-        inputRow.style.display = "flex";
+        inputRow.classList.add('flex');
         userInput.value = "";
         userInput.focus();
       } else {
-        inputRow.style.display = "none";
+        inputRow.classList.remove('flex');
         startAbacusChat();
       }
     }
 
-    sendBtn.onclick = () => {
-      const answer = userInput.value.trim(); if (!answer) return;
-      showUserMessage(answer);
-      userAnswers.push(answer);
-      inputRow.style.display = "none";
-      currentIntroIdx++;
-      setTimeout(askNextIntro, 800);
-    };
+    sendBtn.onclick = () => { const answer = userInput.value.trim(); if (!answer) return; showUserMessage(answer); userAnswers.push(answer); inputRow.classList.remove('flex'); currentIntroIdx++; setTimeout(askNextIntro, 800); };
     userInput.onkeydown = e => { if (e.key === "Enter") sendBtn.onclick(); };
 
-    botDropdown.addEventListener("change", () => {
-      resetChat();
-      if (!botConfigs[botDropdown.value]) return;
-      askNextIntro();
-    });
+    botDropdown.addEventListener("change", () => { resetChat(); if (!botConfigs[botDropdown.value]) return; askNextIntro(); });
   </script>
 </body>
 </html>
