@@ -45,8 +45,12 @@
   </div>
 
   <script>
-    // Insert your Abacus API key here or via environment
-    AbacusChat.setApiKey('YOUR_API_KEY');
+    const botConfigs = { 
+      "startup": {
+        name: "Startup Ideation",
+        deploymentToken: "f1e2a505ce1641698d89d014ac87b2bf"
+      }
+    };
 
     const botDropdown = document.getElementById("botDropdown");
     const chatIntro = document.getElementById("chatIntro");
@@ -63,7 +67,6 @@
       "Are there qualities you know you want to design a business strategy around? For example, some people may want to stick to ideas that could be implemented quickly on a small scale with minimum funding while others may be more interested in exploring big ideas with longer timelines and external funding. Describe any potential business qualities that matter to you."
     ];
 
-    const botConfigs = { "startup": { name: "Startup Ideation", deploymentId: "8e738c40e" } };
     let currentIntroIdx = 0;
     let userAnswers = [];
 
@@ -93,7 +96,7 @@
       try {
         await AbacusChat.init({
           container: '#chatContainer',
-          deploymentId: botConfigs['startup'].deploymentId,
+          deploymentToken: botConfigs['startup'].deploymentToken,
           initialMessages: [
             { role: 'system', content: 'User intake data loaded:' },
             { role: 'user', content: JSON.stringify(userAnswers) }
