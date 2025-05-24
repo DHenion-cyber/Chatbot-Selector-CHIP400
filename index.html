@@ -28,30 +28,40 @@
 </head>
 <body>
   <div class="container">
-    <h2>Digital Health Chatbot Portal</h2>
-    <form id="intakeForm">
-      <div class="survey-question">
-        <label>1. What areas of the health landscape interest you most?</label>
-        <input type="text" id="q1" required />
-      </div>
-      <div class="survey-question">
-        <label>2. Are there problems that you're particularly interested in addressing?</label>
-        <input type="text" id="q2" required />
-      </div>
-      <div class="survey-question">
-        <label>3. Which of these areas describe your main orientation? (Patient Impact, Quality, Finance/savings, Efficiency, New Technology)</label>
-        <input type="text" id="q3" required />
-      </div>
-      <div class="survey-question">
-        <label>4. Any subject matter expertise or professional experience you'd like to share?</label>
-        <input type="text" id="q4" required />
-      </div>
-      <div class="survey-question">
-        <label>5. What business qualities matter to you? (Quick/low-budget, Big/external-funded, etc.)</label>
-        <input type="text" id="q5" required />
-      </div>
-      <button type="submit" id="submitBtn">Submit & Generate JSON</button>
-    </form>
+  <h2>Digital Health Chatbot Portal</h2>
+  <form id="intakeForm">
+    <div class="survey-question">
+      <label for="q1">1. What areas of the health landscape interest you most?</label>
+      <input type="text" id="q1" required 
+        placeholder="e.g., wellness, nursing, education" 
+        title="What areas of the health landscape interest you most?" />
+    </div>
+    <div class="survey-question">
+      <label for="q2">2. Are there problems that you're particularly interested in addressing?</label>
+      <input type="text" id="q2" required 
+        placeholder="Describe a problem area" 
+        title="Are there problems you're interested in addressing?" />
+    </div>
+    <div class="survey-question">
+      <label for="q3">3. Which of these areas describe your main orientation? (Patient Impact, Quality, Finance/savings, Efficiency, New Technology)</label>
+      <input type="text" id="q3" required 
+        placeholder="e.g., Patient Impact, Quality" 
+        title="Which area describes your main orientation?" />
+    </div>
+    <div class="survey-question">
+      <label for="q4">4. Any subject matter expertise or professional experience you'd like to share?</label>
+      <input type="text" id="q4" required 
+        placeholder="Summarize your expertise" 
+        title="Any subject matter expertise or professional experience?" />
+    </div>
+    <div class="survey-question">
+      <label for="q5">5. What business qualities matter to you? (Quick/low-budget, Big/external-funded, etc.)</label>
+      <input type="text" id="q5" required 
+        placeholder="e.g., Quick/low-budget, Big/external-funded" 
+        title="What business qualities matter to you?" />
+    </div>
+    <button type="submit" id="submitBtn">Submit & Generate JSON</button>
+  </form>
 
     <div id="summaryBox">
       <div><strong>Copy the JSON summary below, then paste it as your first message in the chatbot.</strong></div>
