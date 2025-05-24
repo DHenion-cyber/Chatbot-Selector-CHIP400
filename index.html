@@ -48,7 +48,8 @@
     const botConfigs = { 
       "startup": {
         name: "Startup Ideation",
-        deploymentToken: "f1e2a505ce1641698d89d014ac87b2bf"
+        deploymentToken: "f1e2a505ce1641698d89d014ac87b2bf",
+        deploymentId: "cf280c6aa"
       }
     };
 
@@ -90,25 +91,25 @@
       chatIntro.appendChild(div); chatIntro.scrollTop = chatIntro.scrollHeight;
     }
 
-    async function startAbacusChatWidget() {
-  chatIntro.style.display = 'none';
-  chatContainer.style.display = 'block';
-  try {
-    const payload = {
-      user_input_json: JSON.stringify(userAnswers), // Or structure as needed
-      keyword_arguments: ""
-    };
-    await AbacusChatWidget.init({
-      deploymentId: 'cf280c6aa',       // e.g., 'cf280c6aa'
-      deploymentToken: 'f1e2a505ce1641698d89d014ac87b2bf', // e.g., 'f1e2a505ce1641698d89d014ac87b2bf'
-      container: '#chatContainer',
-      initialMessages: [
-        { role: 'user', content: JSON.stringify(payload) }
-      ]
-    });
-  } catch (e) {
-    chatContainer.innerHTML = "<div style='color:red;padding:12px'>⚠️ Error loading chat: " + (e.message || e) + "</div>";
-    console.error("AbacusChatWidget error:", e);
+    async function startAbacusChat() {
+      chatIntro.style.display = 'none';
+      chatContainer.style.display = 'block';
+      try {
+        const payload = {
+          user_input_json: JSON.stringify(userAnswers),
+          keyword_arguments: ""
+        };
+        await AbacusChat.init({
+          deploymentId: botConfigs['startup'].deploymentId,
+          deploymentToken: botConfigs['startup'].deploymentToken,
+          container: '#chatContainer',
+          initialMessages: [
+            { role: 'user', content: JSON.stringify(payload) }
+          ]
+        });
+      } catch (e) {
+        chatContainer.innerHTML = "<div style='color:red;padding:12px'>⚠️ Error loading chat: " + (e.message || e) + "</div>";
+        console.error("AbacusChat error:", e);
       }
     }
 
@@ -120,7 +121,7 @@
         userInput.focus();
       } else {
         inputRow.classList.remove('flex');
-        startAbacusChatWidget();
+        startAbacusChat();
       }
     }
 
