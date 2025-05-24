@@ -91,19 +91,24 @@
     }
 
     async function startAbacusChat() {
-      chatIntro.style.display = 'none';
-      chatContainer.style.display = 'block';
-      try {
-        await AbacusChat.init({
-          container: '#chatContainer',
-          deploymentToken: botConfigs['startup'].deploymentToken,
-          initialMessages: [
-            { role: 'system', content: 'User intake data loaded:' },
-            { role: 'user', content: JSON.stringify(userAnswers) }
-          ]
-        });
-      } catch (e) {
-        showBotMessage("⚠️ Oops — something went wrong loading the chat. Please refresh.");
+  chatIntro.style.display = 'none';
+  chatContainer.style.display = 'block';
+  try {
+    const payload = {
+      user_input_json: JSON.stringify(userAnswers), // Or structure as needed
+      keyword_arguments: ""
+    };
+    await AbacusChat.init({
+      deploymentId: 'cf280c6aa',       // e.g., 'cf280c6aa'
+      deploymentToken: 'f1e2a505ce1641698d89d014ac87b2bf', // e.g., 'f1e2a505ce1641698d89d014ac87b2bf'
+      container: '#chatContainer',
+      initialMessages: [
+        { role: 'user', content: JSON.stringify(payload) }
+      ]
+    });
+  } catch (e) {
+    chatContainer.innerHTML = "<div style='color:red;padding:12px'>⚠️ Error loading chat: " + (e.message || e) + "</div>";
+    console.error("AbacusChat error:", e);
       }
     }
 
