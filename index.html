@@ -4,144 +4,122 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Digital Health Chatbot Portal</title>
-  <script src="https://cdn.abacus.ai/chat-widget.js"></script>
   <style>
     body { background: #f4f9fb; font-family: 'Segoe UI', Arial, sans-serif; margin: 0; padding: 0; }
     .container { max-width: 640px; margin: 40px auto; padding: 32px; background: #fff; border-radius: 20px; box-shadow: 0 2px 16px rgba(0,0,0,0.08); }
     h2 { color: #278be6; margin-top: 0; }
     label { font-size: 1rem; margin-right: 10px; }
-    select { padding: 8px; font-size: 1rem; margin-bottom: 16px; }
-    #chatIntro { margin-top: 24px; min-height: 150px; }
-    .bot-message { background: #d6eaff; border-radius: 10px; padding: 10px 16px; margin: 10px 0; font-size: 1.07rem; max-width: 95%; box-shadow: 0 1px 6px rgba(39,139,230,0.04); }
-    #chatContainer { margin-top: 28px; border: 1px solid #ccc; border-radius: 10px; height: 500px; display: none; overflow-y: auto; }
-    .user-message { background: #e0e0e0; border-radius: 10px; padding: 10px 16px; margin: 10px 0; font-size: 1.07rem; max-width: 95%; text-align: right; }
-    #inputRow { display: none; margin-top: 20px; gap: 12px; }
-    #inputRow.flex { display: flex; }
-    #userInput { flex: 1; padding: 8px; font-size: 1rem; border-radius: 8px; border: 1px solid #b5d5f6; }
-    #sendBtn { padding: 8px 20px; border-radius: 8px; border: none; background: #278be6; color: #fff; font-size: 1rem; cursor: pointer; transition: background 0.18s; }
-    #sendBtn:active { background: #176ab7; }
+    .survey-question { margin-bottom: 18px; }
+    .survey-question input { width: 100%; padding: 8px; font-size: 1rem; border-radius: 8px; border: 1px solid #b5d5f6; margin-top: 6px; }
+    #submitBtn { padding: 10px 22px; border-radius: 8px; border: none; background: #278be6; color: #fff; font-size: 1.1rem; cursor: pointer; margin-top: 10px; }
+    #submitBtn:active { background: #176ab7; }
+    #summaryBox { margin-top: 24px; padding: 18px; background: #f8fbff; border-radius: 12px; border: 1px solid #b5d5f6; display: none; }
+    #copyBtn { margin: 10px 0 0 0; padding: 7px 20px; border-radius: 7px; border: none; background: #33c2c8; color: #fff; font-size: 1rem; cursor: pointer; }
+    #copiedMsg { color: #27966a; font-size: 0.98rem; margin-left: 14px; }
+    #instructions { margin: 24px 0 8px 0; font-size: 1.08rem; color: #195980; }
+    #chatContainer { margin-top: 14px; border: 1px solid #ccc; border-radius: 12px; height: 500px; }
+    iframe { width: 100%; height: 100%; border: none; border-radius: 10px; }
+    .json-summary { width: 100%; font-family: 'Fira Mono', 'Consolas', 'Menlo', monospace; font-size: 1.03rem; background: #eef6fb; padding: 9px; border-radius: 8px; border: 1px solid #b5d5f6; margin-top: 10px;}
     @media (max-width: 480px) {
-      .container { padding: 16px; margin: 20px; }
-      #chatContainer { height: 400px; }
+      .container { padding: 12px; margin: 10px; }
+      #chatContainer { height: 360px; }
     }
   </style>
 </head>
 <body>
   <div class="container">
     <h2>Digital Health Chatbot Portal</h2>
-    <label for="botDropdown">Choose a Chatbot Agent:</label>
-    <select id="botDropdown">
-      <option value="">-- Select Agent --</option>
-      <option value="startup">Startup Ideation</option>
-    </select>
+    <form id="intakeForm">
+      <div class="survey-question">
+        <label>1. What areas of the health landscape interest you most?</label>
+        <input type="text" id="q1" required />
+      </div>
+      <div class="survey-question">
+        <label>2. Are there problems that you're particularly interested in addressing?</label>
+        <input type="text" id="q2" required />
+      </div>
+      <div class="survey-question">
+        <label>3. Which of these areas describe your main orientation? (Patient Impact, Quality, Finance/savings, Efficiency, New Technology)</label>
+        <input type="text" id="q3" required />
+      </div>
+      <div class="survey-question">
+        <label>4. Any subject matter expertise or professional experience you'd like to share?</label>
+        <input type="text" id="q4" required />
+      </div>
+      <div class="survey-question">
+        <label>5. What business qualities matter to you? (Quick/low-budget, Big/external-funded, etc.)</label>
+        <input type="text" id="q5" required />
+      </div>
+      <button type="submit" id="submitBtn">Submit & Generate JSON</button>
+    </form>
 
-    <div id="chatIntro"></div>
-    <div id="chatContainer"></div>
+    <div id="summaryBox">
+      <div><strong>Copy the JSON summary below, then paste it as your first message in the chatbot.</strong></div>
+      <textarea id="intakeSummary" class="json-summary" rows="8" readonly></textarea>
+      <button id="copyBtn">Copy JSON</button><span id="copiedMsg"></span>
+    </div>
 
-    <div id="inputRow">
-      <input id="userInput" type="text" placeholder="Type your answer..." />
-      <button id="sendBtn">Send</button>
+    <div id="instructions" style="display:none;">
+      <strong>Next:</strong> Paste the copied JSON summary as your first message in the chatbot below to customize your experience.
+    </div>
+
+    <div id="chatContainer" style="display:none;">
+      <iframe 
+        id="chatIframe"
+        src="https://apps.abacus.ai/chatllm/?appId=39872301c"
+        title="Abacus.AI Chatbot"
+        allow="clipboard-write; clipboard-read"
+      ></iframe>
     </div>
   </div>
 
   <script>
-    const botConfigs = { 
-      "startup": {
-        name: "Startup Ideation",
-        deploymentToken: "f1e2a505ce1641698d89d014ac87b2bf",
-        deploymentId: "cf280c6aa"
-      }
-    };
+    const form = document.getElementById('intakeForm');
+    const summaryBox = document.getElementById('summaryBox');
+    const intakeSummary = document.getElementById('intakeSummary');
+    const copyBtn = document.getElementById('copyBtn');
+    const copiedMsg = document.getElementById('copiedMsg');
+    const instructions = document.getElementById('instructions');
+    const chatContainer = document.getElementById('chatContainer');
+    const chatIframe = document.getElementById('chatIframe');
 
-    const botDropdown = document.getElementById("botDropdown");
-    const chatIntro = document.getElementById("chatIntro");
-    const chatContainer = document.getElementById("chatContainer");
-    const inputRow = document.getElementById("inputRow");
-    const userInput = document.getElementById("userInput");
-    const sendBtn = document.getElementById("sendBtn");
+    form.onsubmit = function(e) {
+      e.preventDefault();
 
-    const scriptedIntro = [
-      "Hello! I'm trained to help you explore ideas for digital health innovation! I'd like to start by getting to know a little about your expertise, experience, and interests. What areas of the health landscape interest you most? (i.e., wellness, research, education, nursing, acute care, prosthetics, etc.)",
-      "Are there problems that you're particularly interested in addressing?",
-      "Many people find themselves naturally oriented towards one of the following areas. Do you?\n- Patient Impact\n- Quality (may not be directly patients)\n- Finance/savings\n- Efficiency\n- New Technology",
-      "Do you have subject matter expertise or professional experience you want to share with me? This helps inform me of dynamics that you may be more familiar with to draw on your existing knowledge.",
-      "Are there qualities you know you want to design a business strategy around? For example, some people may want to stick to ideas that could be implemented quickly on a small scale with minimum funding while others may be more interested in exploring big ideas with longer timelines and external funding. Describe any potential business qualities that matter to you."
-    ];
+      // Collect answers
+      const answers = [
+        document.getElementById('q1').value.trim(),
+        document.getElementById('q2').value.trim(),
+        document.getElementById('q3').value.trim(),
+        document.getElementById('q4').value.trim(),
+        document.getElementById('q5').value.trim()
+      ];
 
-    let currentIntroIdx = 0;
-    let userAnswers = [];
+      // Build a valid JSON summary
+      const summaryText = JSON.stringify({
+        user_input_json: answers,
+        keyword_arguments: ""
+      }, null, 2);
 
-    function resetChat() {
-      chatIntro.innerHTML = "";
-      chatIntro.style.display = 'block';
-      chatContainer.innerHTML = "";
-      chatContainer.style.display = 'none';
-      inputRow.classList.remove('flex');
-      userAnswers = [];
-      currentIntroIdx = 0;
-    }
-
-    function showBotMessage(text) {
-      const div = document.createElement("div"); div.className = "bot-message"; div.innerText = text;
-      chatIntro.appendChild(div); chatIntro.scrollTop = chatIntro.scrollHeight;
-    }
-
-    function showUserMessage(text) {
-      const div = document.createElement("div"); div.className = "user-message"; div.innerText = text;
-      chatIntro.appendChild(div); chatIntro.scrollTop = chatIntro.scrollHeight;
-    }
-
-    async function startAbacusChat() {
-      chatIntro.style.display = 'none';
+      intakeSummary.value = summaryText;
+      summaryBox.style.display = 'block';
+      copiedMsg.textContent = '';
+      instructions.style.display = 'block';
       chatContainer.style.display = 'block';
-      try {
-        const payload = {
-          user_input_json: JSON.stringify(userAnswers),
-          keyword_arguments: ""
-        };
-        await AbacusChat.init({
-          deploymentId: botConfigs['startup'].deploymentId,
-          deploymentToken: botConfigs['startup'].deploymentToken,
-          container: '#chatContainer',
-          initialMessages: [
-            { role: 'user', content: JSON.stringify(payload) }
-          ]
-        });
-      } catch (e) {
-        chatContainer.innerHTML = "<div style='color:red;padding:12px'>⚠️ Error loading chat: " + (e.message || e) + "</div>";
-        console.error("AbacusChat error:", e);
-      }
-    }
 
-    function askNextIntro() {
-      if (currentIntroIdx < scriptedIntro.length) {
-        showBotMessage(scriptedIntro[currentIntroIdx]);
-        inputRow.classList.add('flex');
-        userInput.value = "";
-        userInput.focus();
-      } else {
-        inputRow.classList.remove('flex');
-        startAbacusChat();
-      }
-    }
-
-    sendBtn.onclick = () => {
-      const answer = userInput.value.trim();
-      if (!answer) return;
-      showUserMessage(answer);
-      userAnswers.push(answer);
-      inputRow.classList.remove('flex');
-      currentIntroIdx++;
-      setTimeout(askNextIntro, 800);
+      // Scroll to chatbot after summary is shown
+      setTimeout(() => {
+        chatContainer.scrollIntoView({ behavior: "smooth" });
+      }, 400);
     };
 
-    userInput.onkeydown = e => { if (e.key === "Enter") sendBtn.onclick(); };
-
-    botDropdown.addEventListener("change", () => {
-      resetChat();
-      if (!botConfigs[botDropdown.value]) return;
-      askNextIntro();
-    });
+    copyBtn.onclick = function() {
+      intakeSummary.select();
+      intakeSummary.setSelectionRange(0, 99999);
+      document.execCommand("copy");
+      copiedMsg.textContent = "✓ Copied!";
+      setTimeout(() => { copiedMsg.textContent = ""; }, 1800);
+    };
   </script>
 </body>
 </html>
